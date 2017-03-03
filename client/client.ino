@@ -9,13 +9,18 @@ const char* mqtt_server = mqtt_broker;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-long lastMsg = 0;
+int PUSH_BTN = D2;
+
+int lastButtonState = 0;
 
 void setup() {
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   //client.setCallback(callback); //todo add create callback method
+  pinMode(PUSH_BTN, INPUT);
+  Serial.print("Button value: ");
+  Serial.println(digitalRead(PUSH_BTN));
 }
 
 void setup_wifi() {
@@ -59,10 +64,12 @@ void loop() {
     reconnect();
   }
   client.loop();
-  long now = millis();
-   if (now - lastMsg > 2000) {
-    Serial.print("Publish message: next\n");
-     lastMsg = now;
-     client.publish("ingar/keynote", "next");
+  long buttonState = digitalRead(PUSH_BTN);
+   if (buttonState != lastButtonState) {
+     lastButtonState = buttonState;
+     if (buttonState == HIGH) {
+       Serial.println("Button pushed, publish message: next");
+       client.publish("ingar/keynote", "next");
+     }
    }
 }
