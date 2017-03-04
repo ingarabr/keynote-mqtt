@@ -11,4 +11,16 @@ Listen to sub topic keynote with the follwoing message content
 - prev => previous slide
 
 ## Client
-todo
+
+Dependencies:
+- Adafruit GFX Library
+- Adafruid SSD1306
+
+Hardware setup:
+- D1 -> display SCL
+- D2 -> display SDA
+- D6 -> button next slide
+- D7 -> button previous slide
+
+
+
