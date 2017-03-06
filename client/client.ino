@@ -53,8 +53,8 @@ void setupWifiMsg() {
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  display.println("Setting up wifi.");
-  display.print("Connectiong to ");
+  display.println("\nSetting up wifi.");
+  display.print("SSID: ");
   display.print(ssid);
   display.display();
 }
@@ -67,8 +67,34 @@ void setupDoneMsg() {
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  display.println("We're ready now.");
-  display.println("Enjoy the Itera conference!");
+  display.println("\nWe're ready now.");
+  display.println("Enjoy the Itera conf!");
+  display.display();
+}
+
+void iteraMsg() {
+  // Clear the buffer.
+  display.clearDisplay();
+  display.display();
+
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println("\n  Itera conference");
+  display.println("        Enjoy!");
+  display.display();
+}
+
+void slideMsg(const char *slideDirection) {
+  // Clear the buffer.
+  display.clearDisplay();
+  display.display();
+
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.print("\n Change slide:\n     ");
+  display.print(slideDirection);
   display.display();
 }
 
@@ -118,12 +144,14 @@ boolean handleButton(int *state, int buttonId, const char *msg) {
     *state = currentState;
     Serial.print("new  state: "); Serial.println(*state);
     if (currentState == HIGH) {
+      slideMsg(msg);
       Serial.print("Button pushed, publish message: ");
       Serial.println(msg);
       client.publish("ingar/keynote", msg);
       return true;
     } else {
       btnServo.write(SERVO_BASE);
+      iteraMsg();
     }
   }
   return false;
