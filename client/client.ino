@@ -5,6 +5,8 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
+#include <Servo.h>
+
 #include "config.h"
 
 const char* ssid = wifi_ssid;
@@ -17,8 +19,12 @@ Adafruit_SSD1306 display(OLED_RESET);
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+Servo btnServo;
+
 int BTN_NEXT = D6;
 int BTN_PREV = D7;
+int SERVO_PIN = D3;
+int SERVO_BASE = 94;
 
 int nextButtonState = 0;
 int prevButtonState = 0;
@@ -33,6 +39,8 @@ void setup() {
 
   pinMode(BTN_NEXT, INPUT);
   pinMode(BTN_PREV, INPUT);
+
+  setupServo();
   
   setupDoneMsg();
 }
@@ -83,6 +91,10 @@ void setupWifi() {
   Serial.println(WiFi.localIP());
 }
 
+void setupServo() {
+  btnServo.attach(SERVO_PIN);
+  btnServo.write(SERVO_BASE);
+}
 void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
@@ -100,7 +112,7 @@ void reconnect() {
   }
 }
 
-void handleButton(int *state, int buttonId, const char *msg) {
+boolean handleButton(int *state, int buttonId, const char *msg) {
   long currentState = digitalRead(buttonId);
   if (currentState != *state) {
     *state = currentState;
@@ -109,8 +121,12 @@ void handleButton(int *state, int buttonId, const char *msg) {
       Serial.print("Button pushed, publish message: ");
       Serial.println(msg);
       client.publish("ingar/keynote", msg);
+      return true;
+    } else {
+      btnServo.write(SERVO_BASE);
     }
   }
+  return false;
 }
 
 void loop() {
@@ -118,8 +134,11 @@ void loop() {
     reconnect();
   }
   client.loop();
-  handleButton(&nextButtonState, BTN_NEXT, "next");
-  handleButton(&prevButtonState, BTN_PREV, "prev");
-  
-  delay(1000);
+  if (handleButton(&nextButtonState, BTN_NEXT, "next")) {
+    delay(500);
+    btnServo.write(SERVO_BASE + 51);
+  } else if (handleButton(&prevButtonState, BTN_PREV, "prev")) {
+    delay(500);
+    btnServo.write(SERVO_BASE - 51);
+  }
 }
